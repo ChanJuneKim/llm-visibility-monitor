@@ -1,0 +1,22 @@
+{
+  "brand_name": "토스인슈어런스",
+  "brand_aliases": ["토스인슈어런스", "토스 인슈어런스", "Toss Insurance", "토스보험"],
+  "brand_domains": ["[확인 필요: 홈페이지 도메인 입력]"],
+  "competitors": {
+    "굿리치": ["굿리치", "리치앤코"],
+    "뱅크샐러드": ["뱅크샐러드"],
+    "인카금융서비스": ["인카금융"],
+    "한화생명금융서비스": ["한화생명금융서비스"],
+    "삼성생명": ["삼성생명"],
+    "삼성화재": ["삼성화재"],
+    "현대해상": ["현대해상"],
+    "DB손해보험": ["DB손해보험", "DB손보"]
+  },
+  "platforms": ["ChatGPT", "Gemini"],
+  "repeat": 1,
+  "openai_model": "gpt-4.1-mini",
+  "openai_tool": "web_search",
+  "gemini_model": "gemini-2.5-flash",
+  "concurrency": 4,
+  "timeout_sec": 120
+}
