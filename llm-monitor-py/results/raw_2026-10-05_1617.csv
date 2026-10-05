@@ -1,0 +1,6 @@
+﻿측정회차,측정일시,플랫폼,모델,질문ID,테마,질문,반복,브랜드 언급,언급 순위,브랜드 도메인 인용,인용 출처 수,인용 URL,인용 출처 제목,함께 언급된 회사,답변 원문,오류
+2026-10-05_1617,2026-10-05 16:17:41,ChatGPT,gpt-4.1-mini,A01,보장 점검,내 보험 보장이 충분한지 확인하는 방법 알려줘,1,N,,N,0,,,,,"Invalid leading whitespace, reserved character(s), or return character(s) in header value: 'Bearer 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\n'"
+2026-10-05_1617,2026-10-05 16:17:41,Gemini,gemini-2.5-flash,A01,보장 점검,내 보험 보장이 충분한지 확인하는 방법 알려줘,1,N,,N,0,,,,,"HTTP 404: {
+  ""error"": {
+    ""code"": 404,
+    ""message"": ""This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs"
