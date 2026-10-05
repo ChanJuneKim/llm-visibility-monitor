@@ -36,7 +36,7 @@ KST = timezone(timedelta(hours=9))
 
 RAW_FIELDS = [
     "측정회차", "측정일시", "플랫폼", "모델", "질문ID", "테마", "질문", "반복",
-    "브랜드 언급", "언급 순위", "브랜드 도메인 인용", "인용 출처 수", "인용 URL",
+    "브랜드 언급", "브랜드 계열 언급", "언급 순위", "브랜드 도메인 인용", "인용 출처 수", "인용 URL",
     "인용 출처 제목", "함께 언급된 회사", "답변 원문", "오류",
 ]
 
@@ -74,6 +74,8 @@ def call_openai(question, cfg):
             "input": question,
             "tools": [{"type": cfg["openai_tool"],
                        "user_location": {"type": "approximate", "country": "KR"}}],
+            # force_search: 모델이 검색을 건너뛰지 않도록 웹검색 도구 사용을 강제
+            **({"tool_choice": "required"} if cfg.get("force_search", True) else {}),
         },
         timeout=cfg["timeout_sec"],
     )
@@ -88,12 +90,17 @@ def call_gemini(question, cfg):
         json={
             "contents": [{"role": "user", "parts": [{"text": question}]}],
             "tools": [{"google_search": {}}],
+            # Gemini는 검색 강제 옵션이 없어 시스템 지시로 검색 사용을 요청 (100% 보장은 아님)
+            **({"systemInstruction": {"parts": [{"text": SEARCH_INSTRUCTION}]}}
+               if cfg.get("force_search", True) else {}),
         },
         timeout=cfg["timeout_sec"],
     )
     check_status(res)
     return parse_gemini(res.json())
 
+
+SEARCH_INSTRUCTION = "답하기 전에 반드시 Google 검색으로 최신 정보를 확인하고, 검색 결과를 근거로 한국 사용자에게 한국어로 답하세요."
 
 CALLERS = {"ChatGPT": call_openai, "Gemini": call_gemini}
 
@@ -159,7 +166,14 @@ def analyze(text, cites, cfg):
     domains = [d.lower() for d in cfg["brand_domains"] if d and "[" not in d]
     brand_cited = any(d in (c["url"] + " " + c["title"]).lower() for c in cites for d in domains)
 
+    # 브랜드 계열 언급: 별칭을 지운 뒤에도 계열명(예: "토스")이 남아 있는지
+    rest = lower
+    for a in cfg["brand_aliases"]:
+        rest = rest.replace(a.lower(), " ")
+    family = any(f.lower() in rest for f in cfg.get("brand_family_aliases", ["토스"]))
+
     return {
+        "family": family,
         "mentioned": brand_rank is not None,
         "rank": brand_rank,
         "cited": brand_cited,
@@ -189,6 +203,7 @@ def run_job(job, cfg, run_id):
         "플랫폼": platform, "모델": model,
         "질문ID": q["id"], "테마": q["theme"], "질문": q["question"], "반복": rep,
         "브랜드 언급": "Y" if a["mentioned"] else "N",
+        "브랜드 계열 언급": "Y" if a["family"] else "N",
         "언급 순위": a["rank"] or "",
         "브랜드 도메인 인용": "Y" if a["cited"] else "N",
         "인용 출처 수": len(cites),
@@ -220,6 +235,7 @@ def summarize(rows, cfg):
         out.append({
             "플랫폼": platform, "테마": theme, "응답 수": n,
             f"{brand} 언급률": f"{sum(r['브랜드 언급'] == 'Y' for r in g) / n:.1%}",
+            "계열 언급률": f"{sum(r['브랜드 계열 언급'] == 'Y' for r in g) / n:.1%}",
             f"{brand} 인용률": f"{sum(r['브랜드 도메인 인용'] == 'Y' for r in g) / n:.1%}",
             "평균 언급 순위": f"{sum(ranks) / len(ranks):.2f}" if ranks else "",
             "함께 많이 언급된 회사": ", ".join(f"{c}({cnt / n:.0%})" for c, cnt in comp.most_common(3)),
