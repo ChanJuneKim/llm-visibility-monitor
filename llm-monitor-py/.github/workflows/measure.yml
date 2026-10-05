@@ -1,0 +1,46 @@
+name: LLM 언급·인용 측정
+
+on:
+  workflow_dispatch:            # Actions 탭에서 "Run workflow" 버튼으로 수동 실행
+    inputs:
+      limit:
+        description: "앞에서부터 N개 질문만 측정 (비우면 전체)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 0 * * 1"         # 매주 월요일 09:00 KST (UTC 00:00)
+
+permissions:
+  contents: write               # 측정 결과를 저장소에 커밋하기 위한 권한
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: 측정 실행
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            python llm_monitor.py --limit "${{ github.event.inputs.limit }}"
+          else
+            python llm_monitor.py
+          fi
+
+      - name: 결과 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results
+          git commit -m "측정 결과 $(TZ=Asia/Seoul date +'%Y-%m-%d %H:%M')" || echo "변경 사항 없음"
+          git push
