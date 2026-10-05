@@ -57,7 +57,7 @@ def load_questions(path):
 
 
 def require_key(name):
-    key = os.environ.get(name)
+    key = (os.environ.get(name) or "").strip()  # 붙여넣을 때 섞인 공백·줄바꿈 제거
     if not key:
         sys.exit(f"[오류] 환경변수 {name} 가 없습니다. API 키를 먼저 설정하세요.")
     return key
@@ -275,6 +275,8 @@ def main():
         print("첫 오류:", next(r["오류"] for r in rows if r["오류"]))
     for s in summary:
         print("  ", " | ".join(str(v) for v in s.values()))
+    if rows and errors == len(rows):
+        sys.exit("[실패] 모든 호출이 오류로 끝났습니다. 위의 첫 오류 메시지를 확인하세요.")
 
 
 if __name__ == "__main__":
