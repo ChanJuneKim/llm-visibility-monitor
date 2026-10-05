@@ -1,7 +1,7 @@
 {
   "brand_name": "토스인슈어런스",
   "brand_aliases": ["토스인슈어런스", "토스 인슈어런스", "Toss Insurance", "토스보험"],
-  "brand_domains": ["[https://tossinsu.com/]"],
+  "brand_domains": ["https://tossinsu.com/"],
   "competitors": {
     "굿리치": ["굿리치", "리치앤코"],
     "뱅크샐러드": ["뱅크샐러드"],
@@ -16,7 +16,7 @@
   "repeat": 1,
   "openai_model": "gpt-4.1-mini",
   "openai_tool": "web_search",
-  "gemini_model": "gemini-2.5-flash",
+  "gemini_model": "gemini-3.8-flash",
   "concurrency": 4,
   "timeout_sec": 120
 }
