@@ -13,7 +13,7 @@
     "DB손해보험": ["DB손해보험", "DB손보"]
   },
   "platforms": ["ChatGPT", "Gemini"],
-  "repeat": 1,
+  "repeat": 2,
   "openai_model": "gpt-4.1-mini",
   "openai_tool": "web_search",
   "gemini_model": "gemini-3.8-flash",
