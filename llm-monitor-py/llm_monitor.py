@@ -23,6 +23,7 @@ import csv
 import json
 import os
 import sys
+import time
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
@@ -171,10 +172,16 @@ def run_job(job, cfg, run_id):
     platform, q, rep = job
     model = cfg["openai_model"] if platform == "ChatGPT" else cfg["gemini_model"]
     text, cites, error = "", [], ""
-    try:
-        text, cites = CALLERS[platform](q["question"], cfg)
-    except Exception as e:  # 한 건이 실패해도 전체 측정은 계속
-        error = str(e)[:500]
+    for attempt in range(3):  # 일시적 한도 초과(429)·서버 오류(5xx)는 잠시 쉬고 최대 2번 재시도
+        try:
+            text, cites = CALLERS[platform](q["question"], cfg)
+            error = ""
+            break
+        except Exception as e:  # 한 건이 실패해도 전체 측정은 계속
+            error = str(e)[:500]
+            if not any(code in error for code in ("HTTP 429", "HTTP 500", "HTTP 502", "HTTP 503")):
+                break
+            time.sleep(10 * (attempt + 1))
     a = analyze(text, cites, cfg)
     return {
         "측정회차": run_id,
